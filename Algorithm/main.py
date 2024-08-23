@@ -2,7 +2,9 @@ import time
 from algo.algo import MazeSolver 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from model import *
+import model
+from model import predict_image_week_9, stitch_image, stitch_image_own
+import os
 from helper import command_generator
 
 app = Flask(__name__)
