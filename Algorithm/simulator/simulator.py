@@ -281,12 +281,14 @@ def main():
                                 pop_ups['o_1']['text'] = message_1
                                 pop_ups['o_2']['text'] = message_2
 
+                            input_boxes['x_p']['text'] = '1'
+                            input_boxes['y_p']['text'] = '1'
+                            input_boxes['direction_p']['text'] = 'U'
+
                         input_boxes['x_o']['text'] = '0'
                         input_boxes['y_o']['text'] = '0'
                         input_boxes['direction_o']['text'] = 'U'
-                        input_boxes['x_p']['text'] = '1'
-                        input_boxes['y_p']['text'] = '1'
-                        input_boxes['direction_p']['text'] = 'U'
+                            
                     else:
                         box['active'] = False
 
