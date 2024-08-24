@@ -5,25 +5,26 @@ import sys
 pygame.init()
 
 # Constants
-WINDOW_SIZE = (1000, 650)
+WINDOW_SIZE = (800, 650)
 GRID_SIZE = 20
 CELL_SIZE = 25
 MARGIN = 50
 CONTROL_PANEL_HEIGHT = 100
 
-START_POS = [0, 0]
+START_POS = [1, 1]
 START_DIRECTION = 'U'
 OBSTACLES = []
 OBSTACLE_DIRECTIONS = []
 
 # Colors
 WHITE = (255, 255, 255)
-GRAY = (200, 200, 200)
 GRAY_L = (225, 225, 225)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
+GRAY = (200, 200, 200)
 BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+ORANGE = (255, 165, 0)
 
 # Set up display
 screen = pygame.display.set_mode(WINDOW_SIZE)
@@ -32,6 +33,7 @@ pygame.display.set_caption('Robot Simulator')
 # Fonts
 font = pygame.font.Font(None, 36)
 font_input_box = pygame.font.Font(None, 24)
+font_pop_up = pygame.font.Font(None, 18)
 label_font = pygame.font.Font(None, 24)
 
 # Input fields
@@ -40,30 +42,77 @@ input_boxes = {
     'y_o': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 105, MARGIN + 45, 80, 30), 'text': '0', 'active': False},
     'direction_o': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 190, MARGIN + 45, 30, 30), 'text': 'U', 'active': False},
 
-    'x_p': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 185, 80, 30), 'text': '0', 'active': False},
-    'y_p': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 105, MARGIN + 185, 80, 30), 'text': '0', 'active': False},
-    'direction_p': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 190, MARGIN + 185, 30, 30), 'text': 'U', 'active': False}
+    'x_p': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 215, 80, 30), 'text': '1', 'active': False},
+    'y_p': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 105, MARGIN + 215, 80, 30), 'text': '1', 'active': False},
+    'direction_p': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 190, MARGIN + 215, 30, 30), 'text': 'U', 'active': False}
 }
 
 buttons = {
     'add' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 80, 125, 30), 'color': GREEN, 'text': 'ADD', 'active': False},
     'reset_o' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 150, MARGIN + 80, 70, 30), 'color': RED, 'text': 'RESET', 'active': False},
 
-    'set' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 220, 125, 30), 'color': GREEN, 'text': 'SET', 'active': False},
-    'reset_p' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 150, MARGIN + 220, 70, 30), 'color': RED, 'text': 'RESET', 'active': False}
+    'set' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 250, 125, 30), 'color': GREEN, 'text': 'SET', 'active': False},
+    'reset_p' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 150, MARGIN + 250, 70, 30), 'color': RED, 'text': 'RESET', 'active': False}
 }
+
+pop_ups = {
+    'o_1': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 110, 125, 20), 'text': '', 'active': False},
+    'o_2': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 130, 125, 20), 'text': '', 'active': False},
+    
+    'p_1': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 280, 125, 20), 'text': '', 'active': False},
+    'p_2': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 300, 125, 20), 'text': '', 'active': False}
+}
+
+# Functions
+def update_robot_pos(p, d):
+    robot_position = []
+    robot_position.extend([[p[0] + i, p[1] + j] for i in range(-1, 2) for j in range(-1, 2)])
+
+    if d == 'R': 
+        robot_head = robot_position.pop(7)
+    elif d == 'L':
+        robot_head = robot_position.pop(1)
+    elif d == 'D':
+        robot_head = robot_position.pop(3)
+    elif d == 'U':
+        robot_head = robot_position.pop(5)
+    
+    return robot_position, robot_head
 
 # Global variables
 start_pos = START_POS
 start_direction = START_DIRECTION
 obstacles = OBSTACLES
 obstacle_directions = OBSTACLE_DIRECTIONS
+robot_pos, robot_head = update_robot_pos(start_pos, start_direction)
 
 # Functions
 def draw_grid():
+    robot_pos, robot_head = update_robot_pos(start_pos, start_direction)
+
     for x in range(GRID_SIZE):
         for y in range(GRID_SIZE):
             rect = pygame.Rect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+            
+            if [x, GRID_SIZE - 1 - y] in obstacles:
+                pygame.draw.rect(screen, BLACK, rect)
+
+                i = obstacles.index([x, GRID_SIZE - 1 - y])
+                if obstacle_directions[i] == 'U':
+                    pygame.draw.rect(screen, RED, pygame.Rect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, 5))
+                elif obstacle_directions[i] == 'D':
+                    pygame.draw.rect(screen, RED, pygame.Rect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE + (CELL_SIZE - 5), CELL_SIZE, 5))
+                elif obstacle_directions[i] == 'L':
+                    pygame.draw.rect(screen, RED, pygame.Rect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, 5, CELL_SIZE))
+                elif obstacle_directions[i] == 'R':
+                    pygame.draw.rect(screen, RED, pygame.Rect(MARGIN + x * CELL_SIZE + (CELL_SIZE - 5), MARGIN + y * CELL_SIZE, 5, CELL_SIZE))
+
+            elif [x, GRID_SIZE - 1 - y] == robot_head:
+                pygame.draw.rect(screen, ORANGE, rect)
+            
+            elif [x, GRID_SIZE - 1 - y] in robot_pos:
+                pygame.draw.rect(screen, BLUE, rect)
+
             pygame.draw.rect(screen, GRAY, rect, 1)
 
 def draw_labels():
@@ -82,9 +131,9 @@ def draw_titles():
     text = font.render('Add Obstacle', True, BLACK)
     screen.blit(text, (GRID_SIZE * CELL_SIZE + MARGIN + 40, MARGIN + 10))
 
-    pygame.draw.rect(screen, GRAY, (GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 140, 200, 40))
+    pygame.draw.rect(screen, GRAY, (GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 170, 200, 40))
     text = font.render('Robot Position', True, BLACK)
-    screen.blit(text, (GRID_SIZE * CELL_SIZE + MARGIN + 32, MARGIN + 150))
+    screen.blit(text, (GRID_SIZE * CELL_SIZE + MARGIN + 32, MARGIN + 180))
 
 def draw_input_boxes():
     for key, box in input_boxes.items():
@@ -101,6 +150,12 @@ def draw_buttons():
         text_surface = font_input_box.render(box['text'], True, BLACK)
         screen.blit(text_surface, (box['rect'].x + 6, box['rect'].y + 8))
 
+def draw_pop_ups():
+    for key, box in pop_ups.items():
+        pygame.draw.rect(screen, WHITE, box['rect'])
+        text_surface = font_pop_up.render(box['text'], True, BLACK)
+        screen.blit(text_surface, (box['rect'].x + 6, box['rect'].y + 8))
+
 def draw_control_panel():
     # Draw background
     panel_rect = pygame.Rect(0, GRID_SIZE * CELL_SIZE + MARGIN + 50, WINDOW_SIZE[0], CONTROL_PANEL_HEIGHT)
@@ -110,8 +165,10 @@ def draw_control_panel():
     draw_titles()
     draw_input_boxes()
     draw_buttons()
+    draw_pop_ups()
 
 def main():
+    global start_pos, start_direction, obstacles, obstacle_directions, robot_pos, robot_head
     clock = pygame.time.Clock()
     
     while True:
@@ -135,8 +192,6 @@ def main():
                             elif box['text'] == 'R':
                                 box['text'] = 'U'
                             
-                            print(box['text'])
-                            
                             input_boxes[key]['text'] = box['text']
                     else:
                         box['active'] = False
@@ -151,32 +206,87 @@ def main():
                             obstacle.append(int(input_boxes['y_o']['text']))
 
                             add_status = 1
-                            for o in obstacles:
-                                if o == obstacle:
-                                    print("Failed to add new obstacle: location occupied")
-                                    add_status = 0
+                            if obstacle in obstacles or obstacle in robot_pos:
+                                message_1 = "Failed to add new obstacle:"
+                                message_2 = "location occupied"
+                                print(message_1, message_2)
+                                pop_ups['o_1']['text'] = message_1
+                                pop_ups['o_2']['text'] = message_2
+                                add_status = 0
                             
                             if add_status == 1:
                                 obstacles.append(obstacle)
                                 obstacle_directions.append(input_boxes['direction_o']['text'])
-                                print("New obstacle added to", obstacles[-1], "\nNew obstacle's direction set to", obstacle_directions[-1])
+                                
+                                message_1 = f"New obstacle added to {obstacles[-1]}"
+                                message_2 = f"New obstacle's direction set to {obstacle_directions[-1]}"
+                                print(message_1, message_2)
+                                pop_ups['o_1']['text'] = message_1
+                                pop_ups['o_2']['text'] = message_2
                         
                         elif key == 'reset_o':
-                            obstacles = OBSTACLES
-                            obstacle_directions = OBSTACLE_DIRECTIONS
-                            print("Obstacle(s) cleared")
+                            obstacles.clear()
+                            obstacle_directions.clear()
+
+                            message_1 = "Obstacle(s) cleared"
+                            print(message_1)
+                            pop_ups['o_1']['text'] = message_1
+                            pop_ups['o_2']['text'] = ''
                         
                         elif key == 'set':
-                            start_pos[0] = int(input_boxes['x_p']['text'])
-                            start_pos[1] = int(input_boxes['y_p']['text'])
-                            start_direction = input_boxes['direction_p']['text']
-                            print("Start position set to", start_pos, "\nStart direction set to", start_direction)
+                            set_status = 1
+                            rs, _ = update_robot_pos([int(input_boxes['x_p']['text']), int(input_boxes['y_p']['text'])], input_boxes['direction_p']['text'])
+                            for r in rs:
+                                if r in obstacles:
+                                    message_1 = "Failed to add new obstacle:"
+                                    message_2 = "location occupied"
+                                    print(message_1, message_2)
+                                    pop_ups['p_1']['text'] = message_1
+                                    pop_ups['p_2']['text'] = message_2
+                                    set_status = 0
+                            
+                            if set_status == 1:
+                                start_pos[0] = int(input_boxes['x_p']['text'])
+                                start_pos[1] = int(input_boxes['y_p']['text'])
+                                start_direction = input_boxes['direction_p']['text']
+                                robot_pos, robot_head = update_robot_pos(start_pos, start_direction)
+
+                                message_1 = f"Start position set to {start_pos}"
+                                message_2 = f"Start direction set to {start_direction}"
+                                print(message_1, message_2)
+                                pop_ups['p_1']['text'] = message_1
+                                pop_ups['p_2']['text'] = message_2
                         
                         elif key == 'reset_p':
-                            start_pos = START_POS
-                            start_direction = START_DIRECTION
-                            print("Start position reset to", start_pos, "\nStart direction reset to", start_direction)
+                            start_pos = [1, 1]
+                            start_direction = 'U'
+                            robot_pos, robot_head = update_robot_pos(start_pos, start_direction)
 
+                            message_1 = f"Start position reset to {start_pos}"
+                            message_2 = f"Start direction reset to {start_direction}"
+                            print(message_1, message_2)
+                            pop_ups['p_1']['text'] = message_1
+                            pop_ups['p_2']['text'] = message_2
+                            
+                            cleared = 0
+                            for obstacle in obstacles:
+                                if obstacle in robot_pos:
+                                    obstacles.pop(obstacles.index(obstacle))
+                                    cleared = 1
+
+                            if cleared == 1:
+                                message_1 = f"Obstacles at start position cleared"
+                                message_2 = f""
+                                print(message_1, message_2)
+                                pop_ups['o_1']['text'] = message_1
+                                pop_ups['o_2']['text'] = message_2
+
+                        input_boxes['x_o']['text'] = '0'
+                        input_boxes['y_o']['text'] = '0'
+                        input_boxes['direction_o']['text'] = 'U'
+                        input_boxes['x_p']['text'] = '1'
+                        input_boxes['y_p']['text'] = '1'
+                        input_boxes['direction_p']['text'] = 'U'
                     else:
                         box['active'] = False
 
@@ -188,11 +298,15 @@ def main():
                                 box['text'] = box['text'][:-1]  # Remove last character
                             elif event.unicode.isdigit():
                                 box['text'] += event.unicode  # Add new digit
-                                if box['text'][0] == '0' and len(box['text']) > 1:
+                                if key in ['x_p', 'y_p'] and int(box['text']) < 1:
+                                    box['text'] = '1'
+                                elif box['text'][0] == '0' and len(box['text']) > 1:
                                     box['text'] = box['text'][1]
-                                if int(box['text']) > 19:
+                                if key in ['x_p', 'y_p'] and int(box['text']) > 18:
+                                    box['text'] = '18'
+                                elif int(box['text']) > 19:
                                     box['text'] = '19'
-
+                                
         screen.fill(WHITE)
         
         # Draw grid
