@@ -52,7 +52,8 @@ buttons = {
     'reset_o' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 150, MARGIN + 80, 70, 30), 'color': RED, 'text': 'RESET', 'active': False},
 
     'set' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 250, 125, 30), 'color': GREEN, 'text': 'SET', 'active': False},
-    'reset_p' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 150, MARGIN + 250, 70, 30), 'color': RED, 'text': 'RESET', 'active': False}
+    'reset_p' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 150, MARGIN + 250, 70, 30), 'color': RED, 'text': 'RESET', 'active': False},
+    'run' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 350, 200, 30), 'color': GREEN, 'text': 'RUN', 'active': False}
 }
 
 pop_ups = {
@@ -64,7 +65,7 @@ pop_ups = {
 }
 
 # Functions
-def update_robot_pos(p, d):
+def update_robot_pos(p: list[int], d:str):
     robot_position = []
     robot_position.extend([[p[0] + i, p[1] + j] for i in range(-1, 2) for j in range(-1, 2)])
 
