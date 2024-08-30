@@ -25,3 +25,12 @@ class Robot:
             CellState: starting cell state of robot (x,y,d)
         """
         return self.states[0]
+    
+    def set_direction(self, direction: Direction):
+        """Sets a new direction for the robot
+
+        Args:
+            direction (Direction): The new direction to set for the robot
+        """
+        # Update the direction in the current state
+        self.states[-1].direction = direction

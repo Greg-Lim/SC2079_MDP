@@ -105,13 +105,22 @@ def get_direction(d):
         return Direction.WEST
     elif d == 'E':
         return Direction.EAST
-    
+
+def cycle_direction(direction):
+    """Cycle through the directions in the order NORTH -> EAST -> SOUTH -> WEST."""
+    if direction == Direction.NORTH:
+        return Direction.EAST
+    elif direction == Direction.EAST:
+        return Direction.SOUTH
+    elif direction == Direction.SOUTH:
+        return Direction.WEST
+    elif direction == Direction.WEST:
+        return Direction.NORTH
+
 # Initialize Global Variables
 robot = Robot(CENTER_X, CENTER_Y, START_DIRECTION)
 start_pos = START_POS
 start_direction = START_DIRECTION
-obstacles = []
-obstacle_directions = []
 robot_pos, robot_head = update_robot_pos(robot)
 
 # Functions
@@ -203,8 +212,15 @@ def add_obstacle(x, y, direction):
 def reset_obstacles():
     grid.reset_obstacles()
 
+def remove_obstacle(x, y):
+    obstacles = grid.get_obstacles()
+    for obstacle in obstacles:
+        if obstacle.x == x and obstacle.y == y:
+            obstacles.remove(obstacle)
+            break
+
 def main():
-    global robot, start_pos, start_direction, obstacles, obstacle_directions, robot_pos, robot_head
+    global robot, start_pos, start_direction, robot_pos, robot_head
     clock = pygame.time.Clock()
     
     while True:
@@ -213,6 +229,45 @@ def main():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = event.pos
+                grid_x = (mouse_x - MARGIN) // CELL_SIZE
+                grid_y = GRID_SIZE - 1 - (mouse_y - MARGIN) // CELL_SIZE
+
+                if grid_x >= 0 and grid_x < GRID_SIZE and grid_y >= 0 and grid_y < GRID_SIZE:
+                    if event.button == 1:  # Left click
+                        clicked_on_obstacle = False
+                        clicked_on_robot = False
+
+                        # Check if the robot is clicked
+                        robot_pos, robot_head = update_robot_pos(robot)
+                        for pos in robot_pos:
+                            if pos[0] == grid_x and pos[1] == grid_y:
+                                robot.set_direction(cycle_direction(robot.get_start_state().direction))
+                                clicked_on_robot = True
+                                break
+
+                        # Check if the robot's head is clicked
+                        if not clicked_on_robot and robot_head[0] == grid_x and robot_head[1] == grid_y:
+                            robot.set_direction(cycle_direction(robot.get_start_state().direction))
+                            clicked_on_robot = True
+
+                        if not clicked_on_robot:  # If the robot was not clicked, check obstacles
+                            for obstacle in grid.get_obstacles():
+                                if obstacle.x == grid_x and obstacle.y == grid_y:
+                                    # Change direction if clicked on an obstacle
+                                    obstacle.direction = cycle_direction(obstacle.direction)
+                                    clicked_on_obstacle = True
+                                    break
+
+                            if not clicked_on_obstacle:
+                                # Add new obstacle with direction 'NORTH' if clicked on a blank cell
+                                if grid.is_valid_coord(grid_x, grid_y):
+                                    add_obstacle(grid_x, grid_y, Direction.NORTH)
+
+                    elif event.button == 3:  # Right click
+                        # Remove obstacle if right-clicked
+                        remove_obstacle(grid_x, grid_y)
+
                 # Handle mouse clicks to activate the correct input box
                 for key, box in input_boxes.items():
                     if box['rect'].collidepoint(event.pos):
