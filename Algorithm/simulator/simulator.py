@@ -1,5 +1,8 @@
 import pygame
 import sys
+from Algorithm.entities.Robot import Robot
+from Algorithm.entities.Entity import Obstacle, CellState, Grid
+from Algorithm.consts import Direction
 
 # Initialize Pygame
 pygame.init()
@@ -12,7 +15,9 @@ MARGIN = 50
 CONTROL_PANEL_HEIGHT = 100
 
 START_POS = [1, 1]
-START_DIRECTION = 'U'
+CENTER_X = 1
+CENTER_Y = 1
+START_DIRECTION = Direction.NORTH
 OBSTACLES = []
 OBSTACLE_DIRECTIONS = []
 
@@ -53,6 +58,7 @@ buttons = {
 
     'set' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 250, 125, 30), 'color': GREEN, 'text': 'SET', 'active': False},
     'reset_p' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 150, MARGIN + 250, 70, 30), 'color': RED, 'text': 'RESET', 'active': False},
+    
     'run' : {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 350, 200, 30), 'color': GREEN, 'text': 'RUN', 'active': False}
 }
 
@@ -65,31 +71,46 @@ pop_ups = {
 }
 
 # Functions
-def update_robot_pos(p: list[int], d:str):
+def update_robot_pos(r:Robot):
+    s = r.get_start_state()
+
+    p = [s.x, s.y]
+    d = s.direction
     robot_position = []
     robot_position.extend([[p[0] + i, p[1] + j] for i in range(-1, 2) for j in range(-1, 2)])
 
-    if d == 'R': 
+    if d == 2: 
         robot_head = robot_position.pop(7)
-    elif d == 'L':
+    elif d == 6:
         robot_head = robot_position.pop(1)
-    elif d == 'D':
+    elif d == 4:
         robot_head = robot_position.pop(3)
-    elif d == 'U':
+    elif d == 0:
         robot_head = robot_position.pop(5)
     
     return robot_position, robot_head
 
+def get_direction(d):
+    if d == 'U':
+        return Direction.NORTH
+    elif d == 'D':
+        return Direction.SOUTH
+    elif d == 'L':
+        return Direction.WEST
+    elif d == 'R':
+        return Direction.EAST
+
 # Global variables
+robot = Robot(CENTER_X, CENTER_Y, START_DIRECTION)
 start_pos = START_POS
 start_direction = START_DIRECTION
 obstacles = OBSTACLES
 obstacle_directions = OBSTACLE_DIRECTIONS
-robot_pos, robot_head = update_robot_pos(start_pos, start_direction)
+robot_pos, robot_head = update_robot_pos(robot)
 
 # Functions
 def draw_grid():
-    robot_pos, robot_head = update_robot_pos(start_pos, start_direction)
+    robot_pos, robot_head = update_robot_pos(robot)
 
     for x in range(GRID_SIZE):
         for y in range(GRID_SIZE):
@@ -169,7 +190,7 @@ def draw_control_panel():
     draw_pop_ups()
 
 def main():
-    global start_pos, start_direction, obstacles, obstacle_directions, robot_pos, robot_head
+    global robot, start_pos, start_direction, obstacles, obstacle_directions, robot_pos, robot_head
     clock = pygame.time.Clock()
     
     while True:
@@ -236,7 +257,9 @@ def main():
                         
                         elif key == 'set':
                             set_status = 1
-                            rs, _ = update_robot_pos([int(input_boxes['x_p']['text']), int(input_boxes['y_p']['text'])], input_boxes['direction_p']['text'])
+                            robot = Robot(int(input_boxes['x_p']['text']), int(input_boxes['y_p']['text']), get_direction(input_boxes['direction_p']['text']))
+                            #rs, _ = update_robot_pos([int(input_boxes['x_p']['text']), int(input_boxes['y_p']['text'])], input_boxes['direction_p']['text'])
+                            rs, _ = update_robot_pos(robot)
                             for r in rs:
                                 if r in obstacles:
                                     message_1 = "Failed to add new obstacle:"
@@ -249,8 +272,9 @@ def main():
                             if set_status == 1:
                                 start_pos[0] = int(input_boxes['x_p']['text'])
                                 start_pos[1] = int(input_boxes['y_p']['text'])
-                                start_direction = input_boxes['direction_p']['text']
-                                robot_pos, robot_head = update_robot_pos(start_pos, start_direction)
+                                start_direction = get_direction(input_boxes['direction_p']['text'])
+                                robot = Robot(start_pos[0], start_pos[1], start_direction)
+                                robot_pos, robot_head = update_robot_pos(robot)
 
                                 message_1 = f"Start position set to {start_pos}"
                                 message_2 = f"Start direction set to {start_direction}"
@@ -260,8 +284,9 @@ def main():
                         
                         elif key == 'reset_p':
                             start_pos = [1, 1]
-                            start_direction = 'U'
-                            robot_pos, robot_head = update_robot_pos(start_pos, start_direction)
+                            start_direction = get_direction('U')
+                            robot = Robot(start_pos[0], start_pos[1], start_direction)
+                            robot_pos, robot_head = update_robot_pos(robot)
 
                             message_1 = f"Start position reset to {start_pos}"
                             message_2 = f"Start direction reset to {start_direction}"
