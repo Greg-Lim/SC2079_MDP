@@ -3,9 +3,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pygame
 import sys
-from Algorithm.entities.Robot import Robot
-from Algorithm.entities.Entity import Obstacle, CellState, Grid
-from Algorithm.consts import Direction
+from entities.Robot import Robot
+from entities.Entity import Obstacle, CellState, Grid
+from consts import Direction
 
 # Initialize Pygame
 pygame.init()
@@ -48,11 +48,11 @@ label_font = pygame.font.Font(None, 24)
 input_boxes = {
     'x_o': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 45, 80, 30), 'text': '0', 'active': False},
     'y_o': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 105, MARGIN + 45, 80, 30), 'text': '0', 'active': False},
-    'direction_o': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 190, MARGIN + 45, 30, 30), 'text': 'U', 'active': False},
+    'direction_o': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 190, MARGIN + 45, 30, 30), 'text': 'N', 'active': False},
 
     'x_p': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 20, MARGIN + 215, 80, 30), 'text': '1', 'active': False},
     'y_p': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 105, MARGIN + 215, 80, 30), 'text': '1', 'active': False},
-    'direction_p': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 190, MARGIN + 215, 30, 30), 'text': 'U', 'active': False}
+    'direction_p': {'rect': pygame.Rect(GRID_SIZE * CELL_SIZE + MARGIN + 190, MARGIN + 215, 30, 30), 'text': 'N', 'active': False}
 }
 
 buttons = {
@@ -94,13 +94,13 @@ def update_robot_pos(r:Robot):
     return robot_position, robot_head
 
 def get_direction(d):
-    if d == 'U':
+    if d == 'N':
         return Direction.NORTH
-    elif d == 'D':
+    elif d == 'S':
         return Direction.SOUTH
-    elif d == 'L':
+    elif d == 'W':
         return Direction.WEST
-    elif d == 'R':
+    elif d == 'E':
         return Direction.EAST
 
 # Global variables
@@ -123,13 +123,13 @@ def draw_grid():
                 pygame.draw.rect(screen, BLACK, rect)
 
                 i = obstacles.index([x, GRID_SIZE - 1 - y])
-                if obstacle_directions[i] == 'U':
+                if obstacle_directions[i] == 'N':
                     pygame.draw.rect(screen, RED, pygame.Rect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, 5))
-                elif obstacle_directions[i] == 'D':
+                elif obstacle_directions[i] == 'S':
                     pygame.draw.rect(screen, RED, pygame.Rect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE + (CELL_SIZE - 5), CELL_SIZE, 5))
-                elif obstacle_directions[i] == 'L':
+                elif obstacle_directions[i] == 'W':
                     pygame.draw.rect(screen, RED, pygame.Rect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, 5, CELL_SIZE))
-                elif obstacle_directions[i] == 'R':
+                elif obstacle_directions[i] == 'E':
                     pygame.draw.rect(screen, RED, pygame.Rect(MARGIN + x * CELL_SIZE + (CELL_SIZE - 5), MARGIN + y * CELL_SIZE, 5, CELL_SIZE))
 
             elif [x, GRID_SIZE - 1 - y] == robot_head:
@@ -208,14 +208,14 @@ def main():
                         box['active'] = True
                         
                         if key in ['direction_o', 'direction_p']:
-                            if box['text'] == 'U':
-                                box['text'] = 'D'
-                            elif box['text'] == 'D':
-                                box['text'] = 'L'
-                            elif box['text'] == 'L':
-                                box['text'] = 'R'
-                            elif box['text'] == 'R':
-                                box['text'] = 'U'
+                            if box['text'] == 'N':
+                                box['text'] = 'E'
+                            elif box['text'] == 'E':
+                                box['text'] = 'S'
+                            elif box['text'] == 'S':
+                                box['text'] = 'W'
+                            elif box['text'] == 'W':
+                                box['text'] = 'N'
                             
                             input_boxes[key]['text'] = box['text']
                     else:
@@ -280,19 +280,19 @@ def main():
                                 robot_pos, robot_head = update_robot_pos(robot)
 
                                 message_1 = f"Start position set to {start_pos}"
-                                message_2 = f"Start direction set to {start_direction}"
+                                message_2 = f"Direction set to {start_direction}"
                                 print(message_1, message_2)
                                 pop_ups['p_1']['text'] = message_1
                                 pop_ups['p_2']['text'] = message_2
                         
                         elif key == 'reset_p':
                             start_pos = [1, 1]
-                            start_direction = get_direction('U')
+                            start_direction = get_direction('N')
                             robot = Robot(start_pos[0], start_pos[1], start_direction)
                             robot_pos, robot_head = update_robot_pos(robot)
 
                             message_1 = f"Start position reset to {start_pos}"
-                            message_2 = f"Start direction reset to {start_direction}"
+                            message_2 = f"Direction reset to {start_direction}"
                             print(message_1, message_2)
                             pop_ups['p_1']['text'] = message_1
                             pop_ups['p_2']['text'] = message_2
@@ -312,11 +312,11 @@ def main():
 
                             input_boxes['x_p']['text'] = '1'
                             input_boxes['y_p']['text'] = '1'
-                            input_boxes['direction_p']['text'] = 'U'
+                            input_boxes['direction_p']['text'] = 'N'
 
                         input_boxes['x_o']['text'] = '0'
                         input_boxes['y_o']['text'] = '0'
-                        input_boxes['direction_o']['text'] = 'U'
+                        input_boxes['direction_o']['text'] = 'N'
                             
                     else:
                         box['active'] = False
