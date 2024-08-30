@@ -1,3 +1,6 @@
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import pygame
 import sys
 
@@ -166,7 +169,7 @@ def draw_control_panel():
     draw_titles()
     draw_input_boxes()
     draw_buttons()
-    draw_pop_ups()
+    draw_pop_ups()    
 
 def main():
     global start_pos, start_direction, obstacles, obstacle_directions, robot_pos, robot_head
