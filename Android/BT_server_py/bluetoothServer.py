@@ -1,8 +1,12 @@
+import os
 import bluetooth
 from commandHandler import CommandHandler
 
 class BluetoothServer:
     def __init__(self):
+        # Set RPi to be discoverable in order for service to be advertisable
+        os.system("sudo hciconfig hci0 piscan")
+
         self.server_socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
         self.server_socket.bind(("", bluetooth.PORT_ANY)) # people report it needs python 3.11
         self.server_socket.listen(1)
