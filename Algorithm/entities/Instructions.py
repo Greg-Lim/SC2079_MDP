@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
 
 from enum import Enum
+import numpy as np
 
 class MovementType(Enum):
     FORWARD= "FORWARD"
@@ -102,13 +104,21 @@ class Instruction:
 
 def getDummyInstruction():
     return Instruction([
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 20)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.LEFT, 20)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.RIGHT, 20)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.BACKWARD, MovementDirection.STRAIGHT, 20)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.BACKWARD, MovementDirection.LEFT, 20)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.BACKWARD, MovementDirection.RIGHT, 20)),
-        _Command(CommandType.FINISH, None)
+        # straight, right, straight, right, straight, right, straight, left, straight, left, straight, left
+        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
+        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.RIGHT, np.pi*100)),
+        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
+        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.RIGHT, np.pi*100)),
+        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
+        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.RIGHT, np.pi*100)),
+        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
+        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.LEFT, np.pi*100)),
+        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
+        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.LEFT, np.pi*100)),
+        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
+        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.LEFT, np.pi*100)),
+
+        
     ], 120, [])
 
 

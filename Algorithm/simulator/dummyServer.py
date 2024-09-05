@@ -4,6 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import json as JSON
 from flask import Flask
+from flask import request
 
 import entities.Instructions as Instructions
 
@@ -29,7 +30,10 @@ class MazeSolver:
         return self.instruction
     
 
-@app.route("/dummyInstruction", methods=['GET'])
+@app.route("/dummyInstruction", methods=['POST', 'GET'])
 def getDummyInstruction():
-    print(Instructions.getDummyInstruction().toJson())
+    # print data from the request
+    print(request.data)
+    
+    # print(Instructions.getDummyInstruction().toJson())
     return JSON.dumps(Instructions.getDummyInstruction().toJson())
