@@ -4,7 +4,7 @@ import pygame
 import time
 from algo.algo import MazeSolver 
 from entities.Robot import Robot
-from entities.Entity import Obstacle, CellState, Grid
+from entities.Entity import Obstacle, Grid
 from consts import Direction
 from helper import command_generator
 
