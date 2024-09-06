@@ -383,6 +383,7 @@ class MazeSolver:
             # g is the actual distance moved so far from the start node to current node
             # h is the heuristic distance from current node to end node
             g_distance = {(start.x, start.y, start.direction): 0}
+            #g_distance = {(tuple(start.x), tuple(start.y), start.direction): 0}
 
             # format of each item in heap: (f_distance of node, x coord of node, y coord of node)
             # heap in Python is a min-heap

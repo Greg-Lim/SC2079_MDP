@@ -1,11 +1,12 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 import pygame
-import sys
+import time
+from algo.algo import MazeSolver 
 from entities.Robot import Robot
 from entities.Entity import Obstacle, CellState, Grid
 from consts import Direction
+from helper import command_generator
 
 # Initialize Pygame
 pygame.init()
@@ -205,7 +206,7 @@ def draw_control_panel():
     draw_buttons()
     draw_pop_ups()    
 
-def add_obstacle(x, y, direction):
+def add_new_obstacle(x, y, direction):
     obstacle = Obstacle(x, y, direction, len(grid.get_obstacles()))
     grid.add_obstacle(obstacle)
 
@@ -219,8 +220,100 @@ def remove_obstacle(x, y):
             obstacles.remove(obstacle)
             break
 
+def visualize_run(commands):
+    global robot_pos, robot_head
+
+    for command in commands:
+        # Parse the command
+        action = command[:2]
+        value = command[2:]
+
+        if action == "FW":
+            # Move Forward
+            steps = int(value)
+            for _ in range(steps // 10):
+                move_robot_forward()  # function to update the robot's position forward
+                update_visualization()  # Redraw the grid after moving
+                pygame.time.delay(500)  # Delay for visualization
+        elif action == "BW":
+            # Move Backward
+            steps = int(value)
+            for _ in range(steps // 10):
+                move_robot_backward()  # function to update the robot's position backward
+                update_visualization()  # Redraw the grid after moving
+                pygame.time.delay(500)
+        elif action == "FR":
+            # Turn Right
+            turn_robot_right()  # function to update robot's direction
+            update_visualization()  # Redraw the grid after turning
+            pygame.time.delay(500)
+        elif action == "FL":
+            # Turn Left
+            turn_robot_left()  # function to update robot's direction
+            update_visualization()  # Redraw the grid after turning
+            pygame.time.delay(500)
+        elif action.startswith("SNAP"):
+            # Take Snapshot
+            snap_action = value.split("_")[1]  # Determine if it's _L, _C, or _R
+            print(f"Taking snapshot: {snap_action}")
+            pygame.time.delay(500)
+        elif action == "FIN":
+            print("Simulation Finished")
+            break
+
+def move_robot_forward():
+    """Function to move the robot forward based on its current direction."""
+    global robot, robot_pos, robot_head
+    # Update robot's position depending on direction
+    state = robot.get_start_state()
+    if state.direction == Direction.NORTH:
+        robot.set_position(state.x, state.y + 1)
+    elif state.direction == Direction.EAST:
+        robot.set_position(state.x + 1, state.y)
+    elif state.direction == Direction.SOUTH:
+        robot.set_position(state.x, state.y - 1)
+    elif state.direction == Direction.WEST:
+        robot.set_position(state.x - 1, state.y)
+    robot_pos, robot_head = update_robot_pos(robot)
+
+def move_robot_backward():
+    """Function to move the robot backward based on its current direction."""
+    global robot, robot_pos, robot_head
+    state = robot.get_start_state()
+    if state.direction == Direction.NORTH:
+        robot.set_position(state.x, state.y - 1)
+    elif state.direction == Direction.EAST:
+        robot.set_position(state.x - 1, state.y)
+    elif state.direction == Direction.SOUTH:
+        robot.set_position(state.x, state.y + 1)
+    elif state.direction == Direction.WEST:
+        robot.set_position(state.x + 1, state.y)
+    robot_pos, robot_head = update_robot_pos(robot)
+
+def turn_robot_right():
+    """Function to turn the robot 90 degrees to the right."""
+    global robot, robot_pos, robot_head
+    robot.set_direction(cycle_direction(robot.get_start_state().direction))
+    robot_pos, robot_head = update_robot_pos(robot)
+
+def turn_robot_left():
+    """Function to turn the robot 90 degrees to the left."""
+    global robot, robot_pos, robot_head
+    # Cycle the opposite direction
+    for _ in range(3):  # Cycle 3 times to go left (as 4 steps go full circle)
+        robot.set_direction(cycle_direction(robot.get_start_state().direction))
+    robot_pos, robot_head = update_robot_pos(robot)
+
+def update_visualization():
+    """Repaint the grid and the robot."""
+    screen.fill(WHITE)
+    draw_grid()
+    draw_labels()
+    draw_control_panel()
+    pygame.display.flip()
+
 def main():
-    global robot, start_pos, start_direction, robot_pos, robot_head
+    global robot, start_pos, start_direction, robot_pos, robot_head, grid
     clock = pygame.time.Clock()
     
     while True:
@@ -262,7 +355,7 @@ def main():
                             if not clicked_on_obstacle:
                                 # Add new obstacle with direction 'NORTH' if clicked on a blank cell
                                 if grid.is_valid_coord(grid_x, grid_y):
-                                    add_obstacle(grid_x, grid_y, Direction.NORTH)
+                                    add_new_obstacle(grid_x, grid_y, Direction.NORTH)
 
                     elif event.button == 3:  # Right click
                         # Remove obstacle if right-clicked
@@ -364,6 +457,27 @@ def main():
                             input_boxes['x_p']['text'] = '1'
                             input_boxes['y_p']['text'] = '1'
                             input_boxes['direction_p']['text'] = 'N'
+
+                        elif key == 'run':
+                            maze_solver = MazeSolver(GRID_SIZE, GRID_SIZE, robot.states[-1].x, robot.states[-1].y - 1, robot.states[-1].direction, big_turn=None)
+                            
+                            obstacles = grid.get_obstacles()
+                            obs = []
+                            for obstacle in obstacles:
+                                maze_solver.add_obstacle(obstacle.x, obstacle.y, obstacle.direction, obstacle.obstacle_id)
+                                ob = {"x": obstacle.x, "y": obstacle.y, "d": obstacle.direction, "id": obstacle.obstacle_id}
+                                obs.append(ob)
+
+                            start = time.time()
+                            optimal_path, distance = maze_solver.get_optimal_order_dp(retrying=True)
+
+                            print(f"Time taken to find shortest path using A* search: {time.time() - start}s")
+                            print(f"Distance to travel: {distance} units")
+
+                            commands = command_generator(optimal_path, obs)
+                            print(commands)
+
+                            visualize_run(commands)
 
                         input_boxes['x_o']['text'] = '0'
                         input_boxes['y_o']['text'] = '0'

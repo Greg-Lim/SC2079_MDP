@@ -2,7 +2,6 @@ from typing import List
 from consts import Direction, EXPANDED_CELL, SCREENSHOT_COST
 from helper import is_valid
 
-
 class CellState:
     """Base class for all objects on the arena, such as cells, obstacles, etc"""
 

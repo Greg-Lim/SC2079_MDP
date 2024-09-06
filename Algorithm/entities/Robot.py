@@ -34,3 +34,7 @@ class Robot:
         """
         # Update the direction in the current state
         self.states[-1].direction = direction
+
+    def set_position(self, x_new, y_new):
+        self.states[-1].x = x_new
+        self.states[-1].y = y_new
