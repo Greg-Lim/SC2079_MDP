@@ -15,7 +15,8 @@ class MovementDirection(Enum):
 
 class CommandType(Enum):
     SNAP= "SNAP"
-    MOVEMENT= "MOVEMENT"
+    TURN= "TURN"
+    STRAIGHT = "STRAIGHT"
     FINISH= "FINISH"
 
 class _Movement:
@@ -35,6 +36,9 @@ class _Movement:
         return f"{self.movementType.value}_{self.movementDirection.value}_{self.distance}"
 
 
+class StrainghtMovement(_Movement):
+
+
 class _Command:
     def __init__(self, command, value):
         self.command: CommandType = command
@@ -45,7 +49,7 @@ class _Command:
             return {
                 "command": "SNAP"
             }
-        elif self.command == CommandType.MOVEMENT:
+        elif self.command == CommandType.TURN:
             return {
                 "command": "MOVEMENT",
                 "value": self.value.toJson()
@@ -60,7 +64,7 @@ class _Command:
     def __str__(self):
         if self.command == CommandType.SNAP:
             return f"SNAP"
-        elif self.command == CommandType.MOVEMENT:
+        elif self.command == CommandType.TURN:
             return str(self.value)
         elif self.command == CommandType.FINISH:
             return f"FINISH"
@@ -105,18 +109,18 @@ class Instruction:
 def getDummyInstruction():
     return Instruction([
         # straight, right, straight, right, straight, right, straight, left, straight, left, straight, left
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.RIGHT, np.pi*100)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.RIGHT, np.pi*100)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.RIGHT, np.pi*100)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.LEFT, np.pi*100)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.LEFT, np.pi*100)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
-        _Command(CommandType.MOVEMENT, _Movement(MovementType.FORWARD, MovementDirection.LEFT, np.pi*100)),
+        _Command(CommandType.TURN, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
+        _Command(CommandType.TURN, _Movement(MovementType.FORWARD, MovementDirection.RIGHT, np.pi*100)),
+        _Command(CommandType.TURN, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
+        _Command(CommandType.TURN, _Movement(MovementType.FORWARD, MovementDirection.RIGHT, np.pi*100)),
+        _Command(CommandType.TURN, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
+        _Command(CommandType.TURN, _Movement(MovementType.FORWARD, MovementDirection.RIGHT, np.pi*100)),
+        _Command(CommandType.TURN, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
+        _Command(CommandType.TURN, _Movement(MovementType.FORWARD, MovementDirection.LEFT, np.pi*100)),
+        _Command(CommandType.TURN, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
+        _Command(CommandType.TURN, _Movement(MovementType.FORWARD, MovementDirection.LEFT, np.pi*100)),
+        _Command(CommandType.TURN, _Movement(MovementType.FORWARD, MovementDirection.STRAIGHT, 200)),
+        _Command(CommandType.TURN, _Movement(MovementType.FORWARD, MovementDirection.LEFT, np.pi*100)),
 
         
     ], 120, [])
