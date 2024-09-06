@@ -541,7 +541,7 @@ def draw_path(instuction: Instructions.Instruction):
     if instuction is None:
         return
     for command in instuction.commands:
-        if command.command == Instructions.CommandType.MOVEMENT:
+        if command.command == Instructions.CommandType.TURN:
             movement = command.value
             if movement.movementDirection == Instructions.MovementDirection.STRAIGHT:
                 distance = movement.distance if movement.movementType == Instructions.MovementType.FORWARD else -movement.distance
@@ -580,7 +580,7 @@ def main():
         
         # Draw control panels
         draw_control_panel()
-        
+
         dummy = Instructions.getDummyInstruction()
         dummy.commands = dummy.commands[:]
         draw_path(dummy)
