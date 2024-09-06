@@ -2,13 +2,14 @@ import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pygame
 import time
+import numpy as np
+from algo.optimal_path import optimal_path as calculate_optimal_path
 # from algo.algo import MazeSolver 
 from entities.Robot import Robot
 from entities.Entity import Obstacle, Grid
 from consts import Direction
 from helper import command_generator
 import entities.Instructions as Instructions
-import numpy as np
 
 # Initialize Pygame
 pygame.init()
@@ -461,8 +462,14 @@ def event_handler(event, robot, start_pos, start_direction, robot_pos, robot_hea
                     input_boxes['direction_p']['text'] = 'N'
 
                 elif key == 'run':
-                    pass
+                    optimal_commands, optimal_cost = calculate_optimal_path(grid, robot)
                     
+                    if optimal_cost == float('inf'):
+                        print(">>Error>>", optimal_commands)
+                    else:
+                        print(f"Optimal path cost: {optimal_cost}")
+                        for command in optimal_commands:
+                            print(command)
 
                     # maze_solver = MazeSolver(GRID_SIZE, GRID_SIZE, robot.states[-1].x, robot.states[-1].y - 1, robot.states[-1].direction, big_turn=None)
                     
@@ -581,9 +588,9 @@ def main():
         # Draw control panels
         draw_control_panel()
 
-        dummy = Instructions.getDummyInstruction()
-        dummy.commands = dummy.commands[:]
-        draw_path(dummy)
+        # dummy = Instructions.getDummyInstruction()
+        # dummy.commands = dummy.commands[:]
+        # draw_path(dummy)
         
         pygame.display.flip()
         clock.tick(30)

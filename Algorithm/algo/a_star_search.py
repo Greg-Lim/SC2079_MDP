@@ -43,6 +43,9 @@ def expand_obstacles(obstacles: List[List[int]], grid_w: int, grid_h: int) -> Li
 
 # Check if the robot's current position is valid (i.e., not in an obstacle)
 def is_valid(grid_w: int, grid_h: int, pos: Tuple[int, int], expanded_obstacles: List[Tuple[int, int]]) -> bool:
+    """x,y = pos
+    if not (0 <= x < grid_w and 0 <= y < grid_h):
+        return False"""
     return pos not in expanded_obstacles
 
 # Simulate the robot turning around the center, adjusting the direction and position
@@ -89,10 +92,10 @@ def perform_turn(robot_pos: Tuple[int, int], direction: Direction, turn_directio
         
     return (x, y), d
 
-# A* search algorithm implementation
 def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_pos: List[int], robot_d: Direction, target_pos: List[int], target_d: Direction) -> Optional[Tuple[List[Tuple[Tuple[int, int], Direction]], float]]:
     # Expand the obstacles to accommodate the robot's 3x3 size
     expanded_obstacles = expand_obstacles(obstacles, grid_w, grid_h)
+    print("Expanded Obstacles:", expanded_obstacles)  # Debugging log
 
     start = tuple(robot_pos)
     target = tuple(target_pos)
@@ -104,25 +107,34 @@ def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_po
     heapq.heappush(open_list, start_node)
     closed_set = set()
 
-    while open_list:
-        current_node = heapq.heappop(open_list)
+    # Add a counter to track how many iterations we go through
+    iteration_counter = 0
 
-        # Goal check
+    while open_list:
+        iteration_counter += 1
+        current_node = heapq.heappop(open_list)
+        print(f"Iteration {iteration_counter}: Current node: {current_node.position} facing {current_node.direction}")  # Debugging log
+
+        # Check if the current node is the goal
         if current_node.position == target and current_node.direction == target_dir:
             path = []
-            total_cost = current_node.g  # Final cost to reach the target
+            total_cost = current_node.g
             while current_node:
                 path.append((current_node.position, current_node.direction))
                 current_node = current_node.parent
-            return path[::-1], total_cost  # Reverse path
+            print(f"Goal reached with total cost: {total_cost}")  # Debugging log
+            return path[::-1], total_cost
 
-        # Add to closed set
+        # Create a unique key for the node (position + direction)
         closed_key = (current_node.position, current_node.direction)
+
+        # Check if the node has already been expanded (to avoid revisiting)
         if closed_key in closed_set:
+            print(f"Already visited: {current_node.position}, {current_node.direction}")  # Debugging log
             continue
         closed_set.add(closed_key)
 
-        # Explore all possible movements
+        # Explore all possible movements (neighbors)
         for move_x, move_y, move_dir in MOVE_DIRECTION:
             new_x = current_node.position[0] + move_x
             new_y = current_node.position[1] + move_y
@@ -131,19 +143,19 @@ def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_po
 
             # Check validity against expanded obstacles
             if not is_valid(grid_w, grid_h, new_pos, expanded_obstacles):
+                print(f"Position {new_pos} blocked by obstacle.")  # Debugging log
                 continue
 
             # Calculate rotation cost
             rotation_cost = Direction.rotation_cost(current_node.direction, new_direction)
 
-            # Handle the right or left turn based on movement
+            # Handle turn logic (e.g., adjust position if turning)
             if current_node.direction != new_direction:
-                if new_direction in [Direction.EAST, Direction.NORTH]:
-                    new_pos, new_direction = perform_turn(current_node.position, current_node.direction, 'right')
-                else:
-                    new_pos, new_direction = perform_turn(current_node.position, current_node.direction, 'left')
+                turn_direction = 'right' if new_direction in [Direction.EAST, Direction.NORTH] else 'left'
+                new_pos, new_direction = perform_turn(current_node.position, current_node.direction, turn_direction)
 
                 if not is_valid(grid_w, grid_h, new_pos, expanded_obstacles):
+                    print(f"Turned position {new_pos} is blocked by an obstacle.")  # Debugging log
                     continue
 
             # Calculate g cost (movement cost)
@@ -157,18 +169,27 @@ def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_po
 
             neighbor_key = (neighbor.position, neighbor.direction)
             if neighbor_key in closed_set:
+                print(f"Neighbor {neighbor.position} facing {neighbor.direction} already visited.")  # Debugging log
                 continue
 
+            print(f"Adding neighbor {neighbor.position} facing {neighbor.direction} to open list.")  # Debugging log
             heapq.heappush(open_list, neighbor)
 
-    return None  # No path found
+        # If the loop runs for too long, break out
+        if iteration_counter > 10000:
+            print("Exceeded iteration limit, aborting search.")
+            return None  # Avoid infinite loop
+
+    print("No path found.")  # Debugging log
+    return None
+
 
 # Example Usage
 if __name__ == "__main__":
     grid_w = 20
     grid_h = 20
     obstacles = [
-        [10, 10],
+        [10, 5],
         [6, 1]
     ]
     robot_pos = [1, 1]
@@ -177,6 +198,7 @@ if __name__ == "__main__":
     target_d = Direction.NORTH
 
     result = a_star_search(grid_w, grid_h, obstacles, robot_pos, robot_d, target_pos, target_d)
+    print("result:",result)
     if result:
         path, total_cost = result
         print(f"Path found with total cost: {total_cost}")

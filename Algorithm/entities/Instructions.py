@@ -37,7 +37,7 @@ class _Movement:
 
 
 class StrainghtMovement(_Movement):
-
+    pass
 
 class _Command:
     def __init__(self, command, value):
