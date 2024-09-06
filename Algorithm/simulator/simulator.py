@@ -2,11 +2,13 @@ import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pygame
 import time
-from algo.algo import MazeSolver 
+# from algo.algo import MazeSolver 
 from entities.Robot import Robot
 from entities.Entity import Obstacle, CellState, Grid
 from consts import Direction
 from helper import command_generator
+import entities.Instructions as Instructions
+import numpy as np
 
 # Initialize Pygame
 pygame.init()
@@ -123,6 +125,7 @@ robot = Robot(CENTER_X, CENTER_Y, START_DIRECTION)
 start_pos = START_POS
 start_direction = START_DIRECTION
 robot_pos, robot_head = update_robot_pos(robot)
+optimal_path = None
 
 # Functions
 def draw_grid():
@@ -211,6 +214,8 @@ def add_new_obstacle(x, y, direction):
     grid.add_obstacle(obstacle)
 
 def reset_obstacles():
+    global optimal_path
+    optimal_path = None
     grid.reset_obstacles()
 
 def remove_obstacle(x, y):
@@ -456,25 +461,30 @@ def event_handler(event, robot, start_pos, start_direction, robot_pos, robot_hea
                     input_boxes['direction_p']['text'] = 'N'
 
                 elif key == 'run':
-                    maze_solver = MazeSolver(GRID_SIZE, GRID_SIZE, robot.states[-1].x, robot.states[-1].y - 1, robot.states[-1].direction, big_turn=None)
+                    pass
                     
-                    obstacles = grid.get_obstacles()
-                    obs = []
-                    for obstacle in obstacles:
-                        maze_solver.add_obstacle(obstacle.x, obstacle.y, obstacle.direction, obstacle.obstacle_id)
-                        ob = {"x": obstacle.x, "y": obstacle.y, "d": obstacle.direction, "id": obstacle.obstacle_id}
-                        obs.append(ob)
 
-                    start = time.time()
-                    optimal_path, distance = maze_solver.get_optimal_order_dp(retrying=True)
+                    # maze_solver = MazeSolver(GRID_SIZE, GRID_SIZE, robot.states[-1].x, robot.states[-1].y - 1, robot.states[-1].direction, big_turn=None)
+                    
+                    # obstacles = grid.get_obstacles()
+                    # obs = []
+                    # for obstacle in obstacles:
+                    #     maze_solver.add_obstacle(obstacle.x, obstacle.y, obstacle.direction, obstacle.obstacle_id)
+                    #     ob = {"x": obstacle.x, "y": obstacle.y, "d": obstacle.direction, "id": obstacle.obstacle_id}
+                    #     obs.append(ob)
 
-                    print(f"Time taken to find shortest path using A* search: {time.time() - start}s")
-                    print(f"Distance to travel: {distance} units")
+                    # start = time.time()
+                    # global optimal_path
+                    # optimal_path, distance = maze_solver.get_optimal_order_dp(retrying=True)
+                    # draw_optimal_path()
 
-                    commands = command_generator(optimal_path, obs)
-                    print(commands)
+                    # print(f"Time taken to find shortest path using A* search: {time.time() - start}s")
+                    # print(f"Distance to travel: {distance} units")
 
-                    visualize_run(commands)
+                    # commands = command_generator(optimal_path, obs)
+                    # print(commands)
+
+                    # visualize_run(commands)
 
                 input_boxes['x_o']['text'] = '0'
                 input_boxes['y_o']['text'] = '0'
@@ -500,6 +510,58 @@ def event_handler(event, robot, start_pos, start_direction, robot_pos, robot_hea
                         elif int(box['text']) > 19:
                             box['text'] = '19'
 
+# def draw_optimal_path():
+#     global optimal_path
+#     if optimal_path is not None:
+#         for i in range(len(optimal_path) - 1):
+#             x1 = optimal_path[i].x
+#             y1 = GRID_SIZE - 1 - optimal_path[i].y
+#             x2 = optimal_path[i + 1].x
+#             y2 = GRID_SIZE - 1 - optimal_path[i + 1].y
+#             pygame.draw.line(screen, GREEN, (MARGIN + x1 * CELL_SIZE + CELL_SIZE // 2, MARGIN + y1 * CELL_SIZE + CELL_SIZE // 2), (MARGIN + x2 * CELL_SIZE + CELL_SIZE // 2, MARGIN + y2 * CELL_SIZE + CELL_SIZE // 2), 5)
+
+TURNING_RADIUS = 1 # TODO:
+
+def draw_path(instuction: Instructions.Instruction):
+    '''
+    Draw the path of the robot based on the instruction
+    '''
+    print(instuction)
+    def grid_to_screen(x, y):
+        return (MARGIN + x * CELL_SIZE + CELL_SIZE // 2, MARGIN + (GRID_SIZE - 1 - y) * CELL_SIZE + CELL_SIZE // 2)
+
+    def angle_from_distance(distance) -> float:
+        return (distance / (2*30))%np.pi
+
+    start_state = robot.get_start_state()
+    # x,y,d
+    curr_point = (start_state.x, start_state.y)
+    direction = start_state.direction/2 * (np.pi/2)
+    print(f"Start point: {curr_point}, direction: {direction}")
+    if instuction is None:
+        return
+    for command in instuction.commands:
+        if command.command == Instructions.CommandType.MOVEMENT:
+            movement = command.value
+            if movement.movementDirection == Instructions.MovementDirection.STRAIGHT:
+                distance = movement.distance if movement.movementType == Instructions.MovementType.FORWARD else -movement.distance
+                next_point = (curr_point[0]+ np.sin(direction)*distance/GRID_SIZE , curr_point[1] + np.cos(direction)*distance/GRID_SIZE)
+                print(f"Next point: {next_point}")
+                pygame.draw.line(screen, RED, grid_to_screen(*curr_point), grid_to_screen(*next_point), 3)
+                curr_point = next_point
+            else:
+                # arc length and radius to angle
+                is_right = movement.movementDirection == Instructions.MovementDirection.RIGHT
+                angle = angle_from_distance(movement.distance) if is_right else -angle_from_distance(movement.distance)
+                arc_cntr = (grid_to_screen(*curr_point)[0] - (-1 if is_right else 1) *TURNING_RADIUS*CELL_SIZE * np.cos(direction), grid_to_screen(*curr_point)[1] + (-1 if is_right else 1) *TURNING_RADIUS*CELL_SIZE * np.sin(direction))
+                pygame.draw.circle(screen, RED, arc_cntr, 5)
+
+                pygame.draw.arc(screen, RED, pygame.Rect(arc_cntr[0] - TURNING_RADIUS*CELL_SIZE, arc_cntr[1] - TURNING_RADIUS*CELL_SIZE, 2*TURNING_RADIUS*CELL_SIZE, 2*TURNING_RADIUS*CELL_SIZE), direction+ np.pi/2, direction + angle + np.pi/2, 3)
+
+                direction += angle
+                curr_point = (arc_cntr[0] + TURNING_RADIUS*CELL_SIZE * np.sin(direction), arc_cntr[1] + TURNING_RADIUS*CELL_SIZE * np.cos(direction))
+
+
 def main():
     global robot, start_pos, start_direction, robot_pos, robot_head, grid
     clock = pygame.time.Clock()
@@ -518,6 +580,10 @@ def main():
         
         # Draw control panels
         draw_control_panel()
+        
+        dummy = Instructions.getDummyInstruction()
+        dummy.commands = dummy.commands[:]
+        draw_path(dummy)
         
         pygame.display.flip()
         clock.tick(30)
