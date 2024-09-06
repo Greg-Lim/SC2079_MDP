@@ -1,8 +1,8 @@
-import math
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from consts import Direction, MOVE_DIRECTION,TURN_FACTOR, EXPANDED_CELL, SAFE_COST, SCREENSHOT_COST, TURN_RADIUS
 import heapq
+import math
 from typing import List, Optional, Tuple
 from enum import Enum
 
@@ -90,15 +90,7 @@ def perform_turn(robot_pos: Tuple[int, int], direction: Direction, turn_directio
     return (x, y), d
 
 # A* search algorithm implementation
-def a_star_search(
-    grid_w: int,
-    grid_h: int,
-    obstacles: List[List[int]],
-    robot_pos: List[int],
-    robot_d: Direction,
-    target_pos: List[int],
-    target_d: Direction
-) -> Optional[List[Tuple[Tuple[int, int], Direction]]]:
+def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_pos: List[int], robot_d: Direction, target_pos: List[int], target_d: Direction) -> Optional[Tuple[List[Tuple[Tuple[int, int], Direction]], float]]:
     # Expand the obstacles to accommodate the robot's 3x3 size
     expanded_obstacles = expand_obstacles(obstacles, grid_w, grid_h)
 
@@ -118,10 +110,11 @@ def a_star_search(
         # Goal check
         if current_node.position == target and current_node.direction == target_dir:
             path = []
+            total_cost = current_node.g  # Final cost to reach the target
             while current_node:
                 path.append((current_node.position, current_node.direction))
                 current_node = current_node.parent
-            return path[::-1]  # Reverse path
+            return path[::-1], total_cost  # Reverse path
 
         # Add to closed set
         closed_key = (current_node.position, current_node.direction)
@@ -183,9 +176,10 @@ if __name__ == "__main__":
     target_pos = [10, 6]
     target_d = Direction.NORTH
 
-    path = a_star_search(grid_w, grid_h, obstacles, robot_pos, robot_d, target_pos, target_d)
-    if path:
-        print("Path found:")
+    result = a_star_search(grid_w, grid_h, obstacles, robot_pos, robot_d, target_pos, target_d)
+    if result:
+        path, total_cost = result
+        print(f"Path found with total cost: {total_cost}")
         for step in path:
             print(f"Position: {step[0]}, Direction: {step[1].name}")
     else:
