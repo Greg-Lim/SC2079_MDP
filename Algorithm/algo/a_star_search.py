@@ -1,6 +1,6 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from consts import Direction, MOVE_DIRECTION,TURN_FACTOR, EXPANDED_CELL, SAFE_COST, SCREENSHOT_COST, TURN_RADIUS
+from consts import Direction, TURN_FACTOR, EXPANDED_CELL, SAFE_COST, SCREENSHOT_COST, TURN_RADIUS
 import heapq
 import math
 from typing import List, Optional, Tuple
@@ -43,9 +43,9 @@ def expand_obstacles(obstacles: List[List[int]], grid_w: int, grid_h: int) -> Li
 
 # Check if the robot's current position is valid (i.e., not in an obstacle)
 def is_valid(grid_w: int, grid_h: int, pos: Tuple[int, int], expanded_obstacles: List[Tuple[int, int]]) -> bool:
-    """x,y = pos
+    x, y = pos
     if not (0 <= x < grid_w and 0 <= y < grid_h):
-        return False"""
+        return False
     return pos not in expanded_obstacles
 
 # Simulate the robot turning around the center, adjusting the direction and position
@@ -92,6 +92,19 @@ def perform_turn(robot_pos: Tuple[int, int], direction: Direction, turn_directio
         
     return (x, y), d
 
+# Update the MOVE_DIRECTION list to include backward movement
+MOVE_DIRECTION = [
+    (0, 1, Direction.NORTH),  # Move forward to the north
+    (0, -1, Direction.SOUTH),  # Move forward to the south
+    (1, 0, Direction.EAST),    # Move forward to the east
+    (-1, 0, Direction.WEST),   # Move forward to the west
+    (0, -1, Direction.NORTH),  # Move backward to the south when facing north
+    (0, 1, Direction.SOUTH),   # Move backward to the north when facing south
+    (-1, 0, Direction.EAST),   # Move backward to the west when facing east
+    (1, 0, Direction.WEST)     # Move backward to the east when facing west
+]
+
+# A* search algorithm implementation
 def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_pos: List[int], robot_d: Direction, target_pos: List[int], target_d: Direction) -> Optional[Tuple[List[Tuple[Tuple[int, int], Direction]], float]]:
     # Expand the obstacles to accommodate the robot's 3x3 size
     expanded_obstacles = expand_obstacles(obstacles, grid_w, grid_h)
