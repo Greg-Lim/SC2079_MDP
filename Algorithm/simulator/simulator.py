@@ -529,44 +529,44 @@ def event_handler(event, robot, start_pos, start_direction, robot_pos, robot_hea
 
 TURNING_RADIUS = 1 # TODO:
 
-def draw_path(instuction: Instructions.Instruction):
-    '''
-    Draw the path of the robot based on the instruction
-    '''
-    print(instuction)
-    def grid_to_screen(x, y):
-        return (MARGIN + x * CELL_SIZE + CELL_SIZE // 2, MARGIN + (GRID_SIZE - 1 - y) * CELL_SIZE + CELL_SIZE // 2)
+# def draw_path(instuction: Instructions.Instruction):
+#     '''
+#     Draw the path of the robot based on the instruction
+#     '''
+#     print(instuction)
+#     def grid_to_screen(x, y):
+#         return (MARGIN + x * CELL_SIZE + CELL_SIZE // 2, MARGIN + (GRID_SIZE - 1 - y) * CELL_SIZE + CELL_SIZE // 2)
 
-    def angle_from_distance(distance) -> float:
-        return (distance / (2*30))%np.pi
+#     def angle_from_distance(distance) -> float:
+#         return (distance / (2*30))%np.pi
 
-    start_state = robot.get_start_state()
-    # x,y,d
-    curr_point = (start_state.x, start_state.y)
-    direction = start_state.direction/2 * (np.pi/2)
-    print(f"Start point: {curr_point}, direction: {direction}")
-    if instuction is None:
-        return
-    for command in instuction.commands:
-        if command.command == Instructions.CommandType.TURN:
-            movement = command.value
-            if movement.movementDirection == Instructions.MovementDirection.STRAIGHT:
-                distance = movement.distance if movement.movementType == Instructions.MovementType.FORWARD else -movement.distance
-                next_point = (curr_point[0]+ np.sin(direction)*distance/GRID_SIZE , curr_point[1] + np.cos(direction)*distance/GRID_SIZE)
-                print(f"Next point: {next_point}")
-                pygame.draw.line(screen, RED, grid_to_screen(*curr_point), grid_to_screen(*next_point), 3)
-                curr_point = next_point
-            else:
-                # arc length and radius to angle
-                is_right = movement.movementDirection == Instructions.MovementDirection.RIGHT
-                angle = angle_from_distance(movement.distance) if is_right else -angle_from_distance(movement.distance)
-                arc_cntr = (grid_to_screen(*curr_point)[0] - (-1 if is_right else 1) *TURNING_RADIUS*CELL_SIZE * np.cos(direction), grid_to_screen(*curr_point)[1] + (-1 if is_right else 1) *TURNING_RADIUS*CELL_SIZE * np.sin(direction))
-                pygame.draw.circle(screen, RED, arc_cntr, 5)
+#     start_state = robot.get_start_state()
+#     # x,y,d
+#     curr_point = (start_state.x, start_state.y)
+#     direction = start_state.direction/2 * (np.pi/2)
+#     print(f"Start point: {curr_point}, direction: {direction}")
+#     if instuction is None:
+#         return
+#     for command in instuction.commands:
+#         if command.command == Instructions.CommandType.TURN:
+#             movement = command.value
+#             if movement.movementDirection == Instructions.MovementDirection.STRAIGHT:
+#                 distance = movement.distance if movement.movementType == Instructions.MovementType.FORWARD else -movement.distance
+#                 next_point = (curr_point[0]+ np.sin(direction)*distance/GRID_SIZE , curr_point[1] + np.cos(direction)*distance/GRID_SIZE)
+#                 print(f"Next point: {next_point}")
+#                 pygame.draw.line(screen, RED, grid_to_screen(*curr_point), grid_to_screen(*next_point), 3)
+#                 curr_point = next_point
+#             else:
+#                 # arc length and radius to angle
+#                 is_right = movement.movementDirection == Instructions.MovementDirection.RIGHT
+#                 angle = angle_from_distance(movement.distance) if is_right else -angle_from_distance(movement.distance)
+#                 arc_cntr = (grid_to_screen(*curr_point)[0] - (-1 if is_right else 1) *TURNING_RADIUS*CELL_SIZE * np.cos(direction), grid_to_screen(*curr_point)[1] + (-1 if is_right else 1) *TURNING_RADIUS*CELL_SIZE * np.sin(direction))
+#                 pygame.draw.circle(screen, RED, arc_cntr, 5)
 
-                pygame.draw.arc(screen, RED, pygame.Rect(arc_cntr[0] - TURNING_RADIUS*CELL_SIZE, arc_cntr[1] - TURNING_RADIUS*CELL_SIZE, 2*TURNING_RADIUS*CELL_SIZE, 2*TURNING_RADIUS*CELL_SIZE), direction+ np.pi/2, direction + angle + np.pi/2, 3)
+#                 pygame.draw.arc(screen, RED, pygame.Rect(arc_cntr[0] - TURNING_RADIUS*CELL_SIZE, arc_cntr[1] - TURNING_RADIUS*CELL_SIZE, 2*TURNING_RADIUS*CELL_SIZE, 2*TURNING_RADIUS*CELL_SIZE), direction+ np.pi/2, direction + angle + np.pi/2, 3)
 
-                direction += angle
-                curr_point = (arc_cntr[0] + TURNING_RADIUS*CELL_SIZE * np.sin(direction), arc_cntr[1] + TURNING_RADIUS*CELL_SIZE * np.cos(direction))
+#                 direction += angle
+#                 curr_point = (arc_cntr[0] + TURNING_RADIUS*CELL_SIZE * np.sin(direction), arc_cntr[1] + TURNING_RADIUS*CELL_SIZE * np.cos(direction))
 
 
 def main():

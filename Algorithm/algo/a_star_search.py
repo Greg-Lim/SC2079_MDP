@@ -105,10 +105,10 @@ MOVE_DIRECTION = [
 ]
 
 # A* search algorithm implementation
-def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_pos: List[int], robot_d: Direction, target_pos: List[int], target_d: Direction) -> Optional[Tuple[List[Tuple[Tuple[int, int], Direction]], float]]:
+def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_pos: List[int], robot_d: Direction, target_pos: List[int], target_d: Direction, verbose = False) -> Optional[Tuple[List[Tuple[Tuple[int, int], Direction]], float]]:
     # Expand the obstacles to accommodate the robot's 3x3 size
     expanded_obstacles = expand_obstacles(obstacles, grid_w, grid_h)
-    print("Expanded Obstacles:", expanded_obstacles)  # Debugging log
+    if verbose: print("Expanded Obstacles:", expanded_obstacles)  # Debugging log
 
     start = tuple(robot_pos)
     target = tuple(target_pos)
@@ -126,7 +126,7 @@ def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_po
     while open_list:
         iteration_counter += 1
         current_node = heapq.heappop(open_list)
-        print(f"Iteration {iteration_counter}: Current node: {current_node.position} facing {current_node.direction}")  # Debugging log
+        if verbose: print(f"Iteration {iteration_counter}: Current node: {current_node.position} facing {current_node.direction}")  # Debugging log
 
         # Check if the current node is the goal
         if current_node.position == target and current_node.direction == target_dir:
@@ -135,7 +135,7 @@ def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_po
             while current_node:
                 path.append((current_node.position, current_node.direction))
                 current_node = current_node.parent
-            print(f"Goal reached with total cost: {total_cost}")  # Debugging log
+            if verbose: print(f"Goal reached with total cost: {total_cost}")  # Debugging log
             return path[::-1], total_cost
 
         # Create a unique key for the node (position + direction)
@@ -143,7 +143,7 @@ def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_po
 
         # Check if the node has already been expanded (to avoid revisiting)
         if closed_key in closed_set:
-            print(f"Already visited: {current_node.position}, {current_node.direction}")  # Debugging log
+            if verbose: print(f"Already visited: {current_node.position}, {current_node.direction}")  # Debugging log
             continue
         closed_set.add(closed_key)
 
@@ -156,7 +156,7 @@ def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_po
 
             # Check validity against expanded obstacles
             if not is_valid(grid_w, grid_h, new_pos, expanded_obstacles):
-                print(f"Position {new_pos} blocked by obstacle.")  # Debugging log
+                if verbose: print(f"Position {new_pos} blocked by obstacle.")  # Debugging log
                 continue
 
             # Calculate rotation cost
@@ -168,7 +168,7 @@ def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_po
                 new_pos, new_direction = perform_turn(current_node.position, current_node.direction, turn_direction)
 
                 if not is_valid(grid_w, grid_h, new_pos, expanded_obstacles):
-                    print(f"Turned position {new_pos} is blocked by an obstacle.")  # Debugging log
+                    if verbose: print(f"Turned position {new_pos} is blocked by an obstacle.")  # Debugging log
                     continue
 
             # Calculate g cost (movement cost)
@@ -182,10 +182,10 @@ def a_star_search(grid_w: int, grid_h: int, obstacles: List[List[int]], robot_po
 
             neighbor_key = (neighbor.position, neighbor.direction)
             if neighbor_key in closed_set:
-                print(f"Neighbor {neighbor.position} facing {neighbor.direction} already visited.")  # Debugging log
+                if verbose: print(f"Neighbor {neighbor.position} facing {neighbor.direction} already visited.")  # Debugging log
                 continue
 
-            print(f"Adding neighbor {neighbor.position} facing {neighbor.direction} to open list.")  # Debugging log
+            if verbose: print(f"Adding neighbor {neighbor.position} facing {neighbor.direction} to open list.")  # Debugging log
             heapq.heappush(open_list, neighbor)
 
         # If the loop runs for too long, break out

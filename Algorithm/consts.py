@@ -37,3 +37,5 @@ SAFE_COST = 1000 # the cost for the turn in case there is a chance that the robo
 SCREENSHOT_COST = 50 # the cost for the place where the picture is taken
 
 OBSERVATION_DISTANCE = 2
+
+REAL_CELL_SIZE = 10 # size of each cell in cm

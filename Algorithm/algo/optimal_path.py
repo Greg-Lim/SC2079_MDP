@@ -4,11 +4,11 @@ from entities.Entity import *
 from entities.Robot import *
 from entities.Instructions import *
 from consts import *
-from algo.a_star_search import a_star_search
+from a_star_search import a_star_search
 import itertools
 
 # Helper function to compute the cost and commands for a given route
-def compute_route_cost(grid_w, grid_h, robot_pos, robot_d, obs_pos, route_positions, route_directions):
+def compute_route_cost(grid_w, grid_h, robot_pos, robot_d, obs_pos, route_positions, route_directions, verbose = False):
     total_cost = 0
     commands = []
 
@@ -21,7 +21,7 @@ def compute_route_cost(grid_w, grid_h, robot_pos, robot_d, obs_pos, route_positi
         target_dir = route_directions[i]
 
         # Get the commands and cost for this leg of the journey
-        result = a_star_search(grid_w, grid_h, obs_pos, current_pos, current_dir, target_pos, target_dir)
+        result = a_star_search(grid_w, grid_h, obs_pos, current_pos, current_dir, target_pos, target_dir, verbose)
         
         # If no valid path found, a_star_search returns None
         if result is None:
@@ -41,7 +41,7 @@ def compute_route_cost(grid_w, grid_h, robot_pos, robot_d, obs_pos, route_positi
 
 
 # Function to calculate the optimal path using brute force
-def optimal_path(grid, robot):
+def optimal_path(grid, robot, verbose=False):
     grid_w = grid.size_x
     grid_h = grid.size_y
     obstacles = grid.get_obstacles()

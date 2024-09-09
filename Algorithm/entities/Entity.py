@@ -413,3 +413,30 @@ class Grid:
             optimal_positions.append(view_states)
 
         return optimal_positions
+    
+    def show_grid(self):
+        """
+        This function shows the grid with the obstacles
+        """
+        from matplotlib import pyplot as plt
+
+        plt.grid(True)
+        plt.xticks(range(self.size_x))
+        plt.yticks(range(self.size_y))
+        plt.xlim(0, self.size_x)
+        plt.ylim(0, self.size_y)
+        for obs in self.obstacles:
+            obs
+            plt.plot(obs.x, obs.y, 'rs', markersize=8)
+            if obs.direction == Direction.NORTH:
+                plt.arrow(obs.x, obs.y, 0, 1, head_width=0.2, head_length=0.2, fc='k', ec='k')
+            elif obs.direction == Direction.SOUTH:
+                plt.arrow(obs.x, obs.y, 0, -1, head_width=0.2, head_length=0.2, fc='k', ec='k')
+            elif obs.direction == Direction.EAST:
+                plt.arrow(obs.x, obs.y, 1, 0, head_width=0.2, head_length=0.2, fc='k', ec='k')
+            elif obs.direction == Direction.WEST:
+                plt.arrow(obs.x, obs.y, -1, 0, head_width=0.2, head_length=0.2, fc='k', ec='k')
+        plt.gca().set_aspect('equal', adjustable='box')
+        ax = plt.gca()
+        ax.set_axisbelow(True)
+        plt.show()
