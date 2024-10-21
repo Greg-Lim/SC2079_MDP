@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:startColor="@color/black"
+    android:endColor="@color/black"
+    android:angle="50"/>
+    <size android:width="100dp" android:height="100dp"/>
+    <corners android:radius="50dp"/> <!-- Half of the width/height to make it a circle -->
+</shape>
